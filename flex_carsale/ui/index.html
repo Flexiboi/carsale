@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            background-color: transparent !important;
+            margin: 0; padding: 0;
+            width: 1024px; height: 512px;
+            display: flex; justify-content: center; align-items: center;
+        }
+        #dui-container {
+            display: none;
+            background-color: rgb(250, 140, 22);
+            color: white;
+            font-family: 'Arial Black', sans-serif;
+            font-size: 80px;
+            padding: 20px 40px;
+            border: 10px solid white;
+            transform: scaleX(-1);
+        }
+    </style>
+</head>
+<body>
+    <div id="dui-container">€10,000.00</div>
+
+    <script>
+        const container = document.getElementById('dui-container');
+
+        function formatPrice(value) {
+            const amount = Number(value);
+            if (!Number.isFinite(amount)) {
+                return '€0';
+            }
+
+            return `€${amount.toLocaleString('nl-BE')}`;
+        }
+
+        window.addEventListener('message', function(event) {
+            const data = event.data;
+            switch (data.type) {
+                case 'updatePrice':
+                    if (data.price != null) {
+                        container.textContent = formatPrice(data.price);
+                    }                    
+                    break;
+                case 'toggleDUI':
+                    container.style.display = data.display ? 'block' : 'none';
+                    if (data.price != null) {
+                        container.textContent = formatPrice(data.price);
+                    }
+                    break;
+            }
+        });
+    </script>
+</body>
+</html>

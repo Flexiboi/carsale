@@ -1,0 +1,72 @@
+{
+   "error": {
+      "no_sales_location_nearby": "No sales location configured nearby",
+      "too_far_from_sales_location": "You are too far from %s",
+      "no_free_spot_in_location": "No free spot in this sales location",
+      "must_be_in_vehicle": "You must be inside a vehicle",
+      "must_be_driver": "You must be the driver of the vehicle",
+      "not_vehicle_owner": "You can only sell a vehicle you own",
+      "invalid_sell_price": "Please enter a valid selling price",
+      "sell_failed": "Could not list your vehicle for sale",
+      "no_permission": "You do not have permission to do this",
+      "failed_to_add_sale_spot": "Failed to add sale spot",
+      "failed_to_add_location": "Failed to add location",
+      "no_spots_to_remove": "No spots available to remove",
+      "failed_to_remove_sale_spot": "Failed to remove sale spot",
+      "no_locations_to_remove": "No locations available to remove",
+      "failed_to_remove_location": "Failed to remove location"
+   },
+   "success": {
+      "added_sale_spot": "Added sale spot #%s to location %s",
+      "added_location": "Added location %s",
+      "removed_sale_spot": "Removed spot #%s from %s",
+      "removed_location": "Removed location %s"
+   },
+   "progress": {
+   },
+   "info": {
+      "buy": "Buy",
+      "yes": "Yes",
+      "no": "No",
+      "buy_confirm_header": "Confirm purchase",
+      "buy_confirm_content": "Do you want to buy this vehicle for $%s?\nPlate: %s",
+      "view_upgrades": "View upgrades",
+      "upgrades_title": "Upgrades - %s",
+      "engine_upgrade": "Engine upgrade",
+      "brakes_upgrade": "Brakes upgrade",
+      "transmission_upgrade": "Transmission upgrade",
+      "suspension_upgrade": "Suspension upgrade",
+      "armor_upgrade": "Armor upgrade",
+      "turbo_upgrade": "Turbo",
+      "nitrous_upgrade": "Nitrous",
+      "upgrade_level": "Level %s",
+      "installed": "Installed",
+      "no_performance_upgrades_title": "No performance upgrades",
+      "no_performance_upgrades_description": "This vehicle has no non-stock performance upgrades.",
+      "sell_vehicle": "Sell vehicle",
+      "press_e_to_sell": "[E] Sell vehicle",
+      "sell_menu_title": "Sell your vehicle",
+      "sell_price_label": "Sale price",
+      "sell_description_label": "Description",
+      "vehicle_description_title": "Seller description",
+      "no_description": "No description provided",
+      "add_sale_spot_title": "Add sale spot",
+      "add_sale_spot_location": "Select location",
+      "add_location_title": "Add car sale location",
+      "add_location_id": "Location ID (no spaces)",
+      "add_location_label": "Display label",
+      "add_location_radius": "Sell radius (meters)",
+      "remove_sale_spot_title": "Remove sale spot",
+      "remove_sale_spot_location": "Select location",
+      "remove_sale_spot_id": "Spot ID to remove",
+      "remove_location_title": "Remove location",
+      "remove_location_select": "Select location to remove"
+   },
+   "discord": {
+   },
+   "mail": {
+      "sender": "Car Sales",
+      "subject": "Your vehicle has been sold!",
+      "message": "Your %s has been sold for $%s!"
+   }
+}

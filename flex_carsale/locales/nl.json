@@ -1,0 +1,72 @@
+{
+   "error": {
+      "no_sales_location_nearby": "Geen verkooplocatie in de buurt geconfigureerd",
+      "too_far_from_sales_location": "Je bent te ver van %s",
+      "no_free_spot_in_location": "Geen vrije plek beschikbaar op deze verkooplocatie",
+      "must_be_in_vehicle": "Je moet in een voertuig zitten",
+      "must_be_driver": "Je moet de bestuurder van het voertuig zijn",
+      "not_vehicle_owner": "Je kan alleen een voertuig verkopen dat van jou is",
+      "invalid_sell_price": "Vul een geldige verkoopprijs in",
+      "sell_failed": "Je voertuig kon niet te koop worden gezet",
+      "no_permission": "Je hebt geen toestemming om dit te doen",
+      "failed_to_add_sale_spot": "Verkoopplek toevoegen mislukt",
+      "failed_to_add_location": "Locatie toevoegen mislukt",
+      "no_spots_to_remove": "Geen spots beschikbaar om te verwijderen",
+      "failed_to_remove_sale_spot": "Verkoopplek verwijderen mislukt",
+      "no_locations_to_remove": "Geen locaties beschikbaar om te verwijderen",
+      "failed_to_remove_location": "Locatie verwijderen mislukt"
+   },
+   "success": {
+      "added_sale_spot": "Verkoopplek #%s toegevoegd aan locatie %s",
+      "added_location": "Locatie %s toegevoegd",
+      "removed_sale_spot": "Verwijderde spot #%s van %s",
+      "removed_location": "Locatie %s verwijderd"
+   },
+   "progress": {
+   },
+   "info": {
+      "buy": "Kopen",
+      "yes": "Ja",
+      "no": "Nee",
+      "buy_confirm_header": "Aankoop bevestigen",
+      "buy_confirm_content": "Wil je dit voertuig kopen voor €%s?\nKenteken: %s",
+      "view_upgrades": "Bekijk upgrades",
+      "upgrades_title": "Upgrades - %s",
+      "engine_upgrade": "Motor upgrade",
+      "brakes_upgrade": "Remmen upgrade",
+      "transmission_upgrade": "Transmissie upgrade",
+      "suspension_upgrade": "Ophanging upgrade",
+      "armor_upgrade": "Pantser upgrade",
+      "turbo_upgrade": "Turbo",
+      "nitrous_upgrade": "Nitrous",
+      "upgrade_level": "Niveau %s",
+      "installed": "Geïnstalleerd",
+      "no_performance_upgrades_title": "Geen performance upgrades",
+      "no_performance_upgrades_description": "Dit voertuig heeft geen niet-standaard performance upgrades.",
+      "sell_vehicle": "Voertuig verkopen",
+      "press_e_to_sell": "[E] Voertuig verkopen",
+      "sell_menu_title": "Verkoop je voertuig",
+      "sell_price_label": "Verkoopprijs",
+      "sell_description_label": "Beschrijving",
+      "vehicle_description_title": "Beschrijving van verkoper",
+      "no_description": "Geen beschrijving opgegeven",
+      "add_sale_spot_title": "Verkoopplek toevoegen",
+      "add_sale_spot_location": "Selecteer locatie",
+      "add_location_title": "Auto verkoop locatie toevoegen",
+      "add_location_id": "Locatie ID (geen spaties)",
+      "add_location_label": "Weergavenaam",
+      "add_location_radius": "Verkoop straal (meters)",
+      "remove_sale_spot_title": "Verkoopplek verwijderen",
+      "remove_sale_spot_location": "Selecteer locatie",
+      "remove_sale_spot_id": "Spot ID om te verwijderen",
+      "remove_location_title": "Locatie verwijderen",
+      "remove_location_select": "Selecteer locatie om te verwijderen"
+   },
+   "discord": {
+   },
+   "mail": {
+      "sender": "Auto Verkoop",
+      "subject": "Je auto is verkocht!",
+      "message": "Je %s is verkocht voor €%s!"
+   }
+}
