@@ -447,5 +447,44 @@ lib.callback.register('flex_carsale:server:buyVehicle', function(src, vehicleDat
 
     TriggerClientEvent('flex_carsale:client:refreshVehicles', -1)
     SV_Config.SendMail(src, locale('mail.subject'), (locale('mail.message'):format(newPrice, VEHICLES[result[1].model].name)))
+
+    local locationId = vehicleData.location or Config.DefaultLocation
+    local locationData = Config.Locations[locationId]
+    local spawnCoords = locationData and locationData.buyVehicle
+    
+    if not spawnCoords and locationData and locationData.saleSpots and locationData.saleSpots[result[1].spotid] then
+        spawnCoords = locationData.saleSpots[result[1].spotid]
+    end
+
+    local vehData = {
+        model = result[1].model,
+        mods = result[1].mods,
+        plate = result[1].plate,
+        coords = spawnCoords,
+        warp = false,
+        locationId = locationId,
+    }
+
+    TriggerClientEvent('flex_carsale:client:BuyFinished', src, vehData)
     return true
+end)
+
+lib.callback.register('flex_carsale:server:spawnVehicle', function(source, vehicle, coords, warp)
+    if not vehicle or not vehicle.model then return end
+
+    local vehmods = json.decode(vehicle.mods)
+    vehicle.props = vehmods
+
+    local netId = SpawnVehicle(source, {
+        model = vehicle.model,
+        coords = coords,
+        warp = warp,
+        props = vehicle.props,
+    })
+
+    if not netId then return end
+
+    SetVehicleNumberPlateText(NetworkGetEntityFromNetworkId(netId), vehicle.plate)
+    TriggerClientEvent('vehiclekeys:client:SetOwner', source, vehicle.plate)
+    return netId
 end)

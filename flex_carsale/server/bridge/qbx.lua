@@ -100,3 +100,14 @@ end
 function HasPermission(src)
     return exports.qbx_core:HasPermission(src, 'admin')
 end
+
+function SpawnVehicle(source, vehicleData)
+    local netId, veh = exports.qbx_core:SpawnVehicle({
+        model = vehicleData.model,
+        spawnSource = vehicleData.coords,
+        warp = vehicleData.warp,
+        props = vehicleData.props,
+    })
+    if not veh or veh == 0 then return nil end
+    return NetworkGetNetworkIdFromEntity(veh)
+end

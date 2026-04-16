@@ -623,6 +623,26 @@ RegisterNetEvent('flex_carsale:client:refreshVehicles', function()
     refreshVehicles()
 end)
 
+RegisterNetEvent('flex_carsale:client:BuyFinished', function(vehData)
+    local locationId = vehData.locationId or Config.DefaultLocation
+    DoScreenFadeOut(250)
+    Wait(500)
+    local netId = lib.callback.await('flex_carsale:server:spawnVehicle', false, vehData, Config.Locations[locationId].buyVehicle, false)
+    local timeout = 100
+    while not NetworkDoesEntityExistWithNetworkId(netId) and timeout > 0 do
+        Wait(10)
+        timeout = timeout - 1
+    end
+    local veh = NetToVeh(netId)
+    SetEntityHeading(veh, Config.Locations[locationId].buyVehicle.w)
+    SetVehicleFuelLevel(veh, 100)
+    lib.setVehicleProperties(veh, vehData.mods)
+    Config.Notify.client(locale('success.vehicle_bought'), 'success', 2500)
+    Wait(500)
+    DoScreenFadeIn(250)
+    currentVehicle = {}
+end)
+
 RegisterNetEvent('flex_carsale:client:sellVehicle', function(amount, description, selectedLocationId)
     if amount and amount > 0 and IsPedInAnyVehicle(cache.ped, false) then
         local locationId, locationDistance = selectedLocationId, nil
