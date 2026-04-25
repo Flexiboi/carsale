@@ -30,6 +30,15 @@ Setup mail when vehicle is bought.
 </br>
 </br>
 
+**NEW**
+</br>
+On setup you can enable a job.
+</br>
+When they have the job of the shop AND have the boss rank they van add new spots for selling.
+</br>
+When car is bought they get a % of that vehicle defined on setup in the company bank.
+</br>
+</br>
 **Setup**
 </br>
 - Dont forget to add the SQL
