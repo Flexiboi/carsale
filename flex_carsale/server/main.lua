@@ -375,6 +375,14 @@ lib.callback.register('flex_carsale:server:sellVehicle', function(src, vehiclePr
         Config.Notify.server(src, locale('error.no_free_spot_in_location'), 'error', 3500)
     end
 
+    -- Check if location requires a job
+    local locationData = Config.Locations[locationId]
+    if locationData and locationData.jobName and locationData.jobName ~= '' then
+        if not HasJob(src, locationData.jobName) then
+            return false, 'no_job'
+        end
+    end
+
     local deletedRows = MySQL.update.await('DELETE FROM player_vehicles WHERE citizenid = ? AND plate = ? AND vehicle = ?', {
         player.PlayerData.citizenid,
         vehicleData.plate,
@@ -384,16 +392,25 @@ lib.callback.register('flex_carsale:server:sellVehicle', function(src, vehiclePr
         return false
     end
 
-    local insertId = MySQL.insert.await('INSERT INTO occasion_vehicles (seller, price, description, plate, model, mods, occasionid, location, spotid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)', {
+    -- Calculate final listing price with commission added
+    local finalPrice = vehiclePrice
+    local commissionAmount = 0
+    if locationData and locationData.commission and locationData.commission > 0 then
+        commissionAmount = math.ceil((vehiclePrice / 100) * locationData.commission)
+        finalPrice = vehiclePrice + commissionAmount
+    end
+
+    local insertId = MySQL.insert.await('INSERT INTO occasion_vehicles (seller, price, description, plate, model, mods, occasionid, location, spotid, commission_amount) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', {
         player.PlayerData.citizenid,
-        vehiclePrice,
+        finalPrice,
         vehicleData.desc,
         vehicleData.plate,
         vehicleData.model,
         json.encode(vehicleData.mods),
         generateOID(),
         locationId,
-        nextSpotId
+        nextSpotId,
+        commissionAmount
     })
 
     if not insertId then
@@ -414,7 +431,7 @@ lib.callback.register('flex_carsale:server:sellVehicle', function(src, vehiclePr
     logEvent('vehicleListed', src, {
         plate = vehicleData.plate,
         model = vehicleData.model,
-        price = vehiclePrice,
+        price = finalPrice,
         location = locationId,
         spotId = nextSpotId
     })
@@ -438,24 +455,22 @@ lib.callback.register('flex_carsale:server:buyVehicle', function(src, vehicleDat
     local jobName = locationData and locationData.jobName
     local commission = locationData and locationData.commission or 0
     
-    -- Calculate seller payment and company commission
-    local totalPrice = result[1].price
-    local companyCommission = 0
-    local sellerPayment = 0
+    -- Get the commission amount stored when seller listed the car
+    local commissionAmount = result[1].commission_amount or 0
+    local sellerPayment = result[1].price - commissionAmount
     
-    if jobName and jobName ~= '' and commission > 0 then
-        -- Calculate commission for company
-        companyCommission = math.ceil((totalPrice / 100) * commission)
-        -- Seller gets remaining after company takes their cut
-        sellerPayment = totalPrice - companyCommission
-        -- Add commission to company bank
-        AddMoneyToCompanyBank(jobName, companyCommission)
-    else
-        -- Old logic: seller gets 77%
-        sellerPayment = math.ceil((totalPrice / 100) * 77)
+    -- If commission amount was stored, use it; otherwise calculate from location commission
+    if commissionAmount == 0 and jobName and jobName ~= '' and commission > 0 then
+        commissionAmount = math.ceil((result[1].price / 100) * commission)
+        sellerPayment = result[1].price - commissionAmount
     end
     
-    RemoveMoney(player, 'bank', totalPrice)
+    -- Send commission to company bank if there is one
+    if jobName and jobName ~= '' and commissionAmount > 0 then
+        AddMoneyToCompanyBank(jobName, commissionAmount)
+    end
+    
+    RemoveMoney(player, 'bank', result[1].price)
     MySQL.insert(
         'INSERT INTO player_vehicles (license, citizenid, vehicle, hash, mods, plate, state) VALUES (?, ?, ?, ?, ?, ?, ?)', {
             player.PlayerData.license,

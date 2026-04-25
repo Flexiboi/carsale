@@ -109,10 +109,19 @@ local function openSellVehicleMenu(locationId)
         return
     end
 
+    -- Check location details for job requirements
+    local locationData = Config.Locations[locationId]
+    local helpText = ''
+    if locationData and locationData.jobName and locationData.jobName ~= '' then
+        local commission = locationData.commission or 0
+        helpText = ('This location requires job: %s with %d%% commission'):format(locationData.jobName, commission)
+    end
+
     local input = lib.inputDialog(locale('info.sell_menu_title'), {
         {
             type = 'number',
             label = locale('info.sell_price_label'),
+            description = helpText,
             min = 1,
             required = true,
         },
@@ -130,6 +139,19 @@ local function openSellVehicleMenu(locationId)
     if not amount or amount <= 0 then
         Config.Notify.client(locale('error.invalid_sell_price'), 'error', 3000)
         return
+    end
+
+    -- Calculate and show final price with commission
+    local finalPrice = amount
+    if locationData and locationData.commission and locationData.commission > 0 then
+        local commission = locationData.commission
+        finalPrice = amount + math.ceil((amount / 100) * commission)
+        Config.Notify.client(('Base: $%d | Commission: %d%% ($%d) | Listing: $%d'):format(
+            amount, 
+            commission,
+            math.ceil((amount / 100) * commission),
+            finalPrice
+        ), 'info', 4000)
     end
 
     TriggerEvent('flex_carsale:client:sellVehicle', amount, input[2], locationId)
@@ -710,11 +732,17 @@ RegisterNetEvent('flex_carsale:client:sellVehicle', function(amount, description
         vehicleData.desc = (description and description ~= '' and description) or locale('info.no_description')
         vehicleData.location = locationId
 
-        local success = lib.callback.await('flex_carsale:server:sellVehicle', false, tonumber(amount), vehicleData)
+        local success, errorCode = lib.callback.await('flex_carsale:server:sellVehicle', false, tonumber(amount), vehicleData)
         if success and DoesEntityExist(vehicle) then
             DeleteVehicle(vehicle)
+            Config.Notify.client(locale('success.vehicle_listed'), 'success', 3500)
         elseif not success then
-            Config.Notify.client(locale('error.sell_failed'), 'error', 3500)
+            if errorCode == 'no_job' then
+                local jobRequired = locationData.jobName or 'unknown'
+                Config.Notify.client(('You need the %s job to sell at this location'):format(jobRequired), 'error', 3500)
+            else
+                Config.Notify.client(locale('error.sell_failed'), 'error', 3500)
+            end
         end
     end
 end)

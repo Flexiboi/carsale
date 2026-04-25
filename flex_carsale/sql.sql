@@ -22,3 +22,5 @@ ALTER TABLE `occasion_vehicles`
 
 ALTER TABLE `occasion_vehicles`
   ADD INDEX `location_spot` (`location`,`spotid`);
+
+ALTER TABLE occasion_vehicles ADD COLUMN commission_amount INT DEFAULT 0;
