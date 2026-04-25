@@ -111,3 +111,25 @@ function SpawnVehicle(source, vehicleData)
     if not veh or veh == 0 then return nil end
     return NetworkGetNetworkIdFromEntity(veh)
 end
+
+function GetPlayerJob(src)
+    local Player = GetPlayer(src)
+    if not Player or not Player.PlayerData then return nil end
+    return Player.PlayerData.job
+end
+
+function HasJob(src, jobName)
+    local playerJob = GetPlayerJob(src)
+    return playerJob and playerJob.name == jobName or false
+end
+
+function IsPlayerJobBoss(src, jobName)
+    local Player = GetPlayer(src)
+    if not Player or not Player.PlayerData then return false end
+    local playerJob = Player.PlayerData.job
+    return playerJob and playerJob.name == jobName and playerJob.isboss == true or false
+end
+
+function AddMoneyToCompanyBank(jobName, amount)
+    return exports['qb-management']:AddMoney(jobName, amount)
+end

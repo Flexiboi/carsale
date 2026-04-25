@@ -280,7 +280,13 @@ local function openAddSaleSpotMenu()
     })
 
     if not success then
-        Config.Notify.client(locale('error.failed_to_add_sale_spot'), 'error', 3500)
+        if spotId == 'no_job' then
+            local locationData = Config.Locations[locationId]
+            local jobRequired = locationData and locationData.jobName or 'unknown'
+            Config.Notify.client(('You must have the %s job to add spots here'):format(jobRequired), 'error', 3500)
+        else
+            Config.Notify.client(locale('error.failed_to_add_sale_spot'), 'error', 3500)
+        end
         return
     end
 
@@ -315,6 +321,19 @@ local function openAddLocationMenu()
             label = locale('info.add_location_radius'),
             default = '50',
             required = true,
+        },
+        {
+            type = 'input',
+            label = 'Job Name (optional)',
+            required = false,
+            placeholder = 'e.g. cardealer'
+        },
+        {
+            type = 'input',
+            label = 'Commission % (optional)',
+            required = false,
+            placeholder = 'e.g. 15',
+            default = '0'
         }
     })
 
@@ -323,6 +342,8 @@ local function openAddLocationMenu()
     local locationId = tostring(input[1]):lower():gsub('%s+', '_')
     local label = input[2] and input[2] ~= '' and input[2] or input[1]
     local radius = tonumber(input[3]) or 50
+    local jobName = input[4] and input[4] ~= '' and input[4] or nil
+    local commission = input[5] and tonumber(input[5]) or 0
 
     local pedCoords = GetEntityCoords(cache.ped)
 
@@ -330,7 +351,7 @@ local function openAddLocationMenu()
         x = pedCoords.x,
         y = pedCoords.y,
         z = pedCoords.z,
-    })
+    }, jobName, commission)
 
     if not success then
         Config.Notify.client(locale('error.failed_to_add_location'), 'error', 3500)

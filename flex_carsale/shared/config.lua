@@ -31,11 +31,15 @@ Config.Notify = {
 -- Add extra locations by duplicating the object below and changing key/coords.
 -- These locations are used as defaults and serialized to JSON on first run.
 -- After that, locations are loaded from data/locations.json
+-- jobName: (optional) Job name required to add sale spots and receive commission
+-- commission: (optional) Commission percentage (0-100) paid to company bank on sales (default: 0)
 Config.Locations = {
     city = {
         label = 'City PDM',
         sellPoint = vector3(219.89, -892.34, 30.69),
         sellRadius = 30.0,
+        jobName = nil, -- Set to job name to enable job-based commission
+        commission = 0, -- Commission percentage (0-100)
         saleSpots = {
             [1] = vector4(221.80, -896.07, 30.69, 317.95),
             [2] = vector4(226.05, -899.64, 30.69, 344.50),

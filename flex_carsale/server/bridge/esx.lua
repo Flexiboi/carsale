@@ -43,3 +43,35 @@ end
 function ClearStash(id)
     exports.ox_inventory:ClearInventory(id, 'false')
 end
+
+function GetPlayerJob(src)
+    local Player = GetPlayer(src)
+    if not Player then return nil end
+    return {
+        name = Player.job.name,
+        grade = Player.job.grade,
+        label = Player.job.label
+    }
+end
+
+function HasJob(src, jobName)
+    local Player = GetPlayer(src)
+    return Player and Player.job and Player.job.name == jobName or false
+end
+
+function IsPlayerJobBoss(src, jobName)
+    local Player = GetPlayer(src)
+    if not Player then return false end
+    -- For ESX, typically the highest grade is the boss (usually grade 3 or 4)
+    return Player.job and Player.job.name == jobName and Player.job.grade_label and Player.job.grade_label:lower():find('boss') or false
+end
+
+function AddMoneyToCompanyBank(jobName, amount)
+    local result = MySQL.query.await('SELECT balance FROM job_safes WHERE job = ?', { jobName })
+    if result[1] then
+        MySQL.update.await('UPDATE job_safes SET balance = balance + ? WHERE job = ?', { amount, jobName })
+    else
+        MySQL.insert.await('INSERT INTO job_safes (job, balance) VALUES (?, ?)', { jobName, amount })
+    end
+    return true
+end

@@ -68,6 +68,8 @@ local function serializeLocations(locations)
                 z = locationData.sellPoint.z,
             },
             saleSpots = saleSpots,
+            jobName = locationData.jobName or nil,
+            commission = locationData.commission or 0,
         }
     end
 
@@ -89,6 +91,8 @@ local function applySavedLocationsToConfig()
                 sellPoint = vector3(locationData.sellPoint.x, locationData.sellPoint.y, locationData.sellPoint.z),
                 sellRadius = tonumber(locationData.sellRadius) or 50.0,
                 saleSpots = saleSpots,
+                jobName = locationData.jobName or nil,
+                commission = tonumber(locationData.commission) or 0,
             }
         end
     end
@@ -202,6 +206,13 @@ lib.callback.register('flex_carsale:server:addSaleSpot', function(src, locationI
     if not isAdmin(src) then return false, 'no_permission' end
     if not SavedLocations[locationId] or not coords then return false, 'invalid_data' end
 
+    -- Check if location requires a job
+    if SavedLocations[locationId].jobName and SavedLocations[locationId].jobName ~= '' then
+        if not HasJob(src, SavedLocations[locationId].jobName) then
+            return false, 'no_job'
+        end
+    end
+
     local maxSpot = 0
     for spotId in pairs(SavedLocations[locationId].saleSpots or {}) do
         local numericSpot = tonumber(spotId) or 0
@@ -227,8 +238,13 @@ lib.callback.register('flex_carsale:server:addSaleSpot', function(src, locationI
     return true, nextSpotId
 end)
 
-lib.callback.register('flex_carsale:server:addLocation', function(src, locationId, label, radius, sellPoint)
-    if not isAdmin(src) then return false, 'no_permission' end
+lib.callback.register('flex_carsale:server:addLocation', function(src, locationId, label, radius, sellPoint, jobName, commission)
+    if not isAdmin(src) then
+        -- If not admin, check if they're a job boss for the specified job
+        if not jobName or not IsPlayerJobBoss(src, jobName) then
+            return false, 'no_permission'
+        end
+    end
     if not locationId or locationId == '' or not sellPoint then return false, 'invalid_data' end
     if SavedLocations[locationId] then return false, 'already_exists' end
 
@@ -240,7 +256,9 @@ lib.callback.register('flex_carsale:server:addLocation', function(src, locationI
             y = sellPoint.y,
             z = sellPoint.z,
         },
-        saleSpots = {}
+        saleSpots = {},
+        jobName = jobName or nil,
+        commission = tonumber(commission) or 0,
     }
 
     if not Config.DefaultLocation then
@@ -414,8 +432,30 @@ lib.callback.register('flex_carsale:server:buyVehicle', function(src, vehicleDat
 
     local sellerCitizenId = result[1].seller
     local sellerData = GetPlayerByCitizenId(sellerCitizenId)
-    local newPrice = math.ceil((result[1].price / 100) * 77)
-    RemoveMoney(player, 'bank', result[1].price)
+    
+    local locationId = vehicleData.location or Config.DefaultLocation
+    local locationData = Config.Locations[locationId]
+    local jobName = locationData and locationData.jobName
+    local commission = locationData and locationData.commission or 0
+    
+    -- Calculate seller payment and company commission
+    local totalPrice = result[1].price
+    local companyCommission = 0
+    local sellerPayment = 0
+    
+    if jobName and jobName ~= '' and commission > 0 then
+        -- Calculate commission for company
+        companyCommission = math.ceil((totalPrice / 100) * commission)
+        -- Seller gets remaining after company takes their cut
+        sellerPayment = totalPrice - companyCommission
+        -- Add commission to company bank
+        AddMoneyToCompanyBank(jobName, companyCommission)
+    else
+        -- Old logic: seller gets 77%
+        sellerPayment = math.ceil((totalPrice / 100) * 77)
+    end
+    
+    RemoveMoney(player, 'bank', totalPrice)
     MySQL.insert(
         'INSERT INTO player_vehicles (license, citizenid, vehicle, hash, mods, plate, state) VALUES (?, ?, ?, ?, ?, ?, ?)', {
             player.PlayerData.license,
@@ -426,12 +466,12 @@ lib.callback.register('flex_carsale:server:buyVehicle', function(src, vehicleDat
             0
         })
     if sellerData then
-        AddMoneyToPlayer(sellerData, 'bank', newPrice)
+        AddMoneyToPlayer(sellerData, 'bank', sellerPayment)
     else
         local buyerData = MySQL.query.await('SELECT * FROM players WHERE citizenid = ?',{sellerCitizenId})
         if buyerData[1] then
             local buyerMoney = json.decode(buyerData[1].money)
-            buyerMoney.bank = buyerMoney.bank + newPrice
+            buyerMoney.bank = buyerMoney.bank + sellerPayment
             MySQL.update('UPDATE players SET money = ? WHERE citizenid = ?', {json.encode(buyerMoney), sellerCitizenId})
         end
     end
@@ -442,14 +482,12 @@ lib.callback.register('flex_carsale:server:buyVehicle', function(src, vehicleDat
         model = result[1].model,
         price = result[1].price,
         sellerCitizenId = sellerCitizenId,
-        location = vehicleData.location or Config.DefaultLocation
+        location = locationId
     })
 
     TriggerClientEvent('flex_carsale:client:refreshVehicles', -1)
-    SV_Config.SendMail(src, locale('mail.subject'), (locale('mail.message'):format(newPrice, VEHICLES[result[1].model].name)))
+    SV_Config.SendMail(src, locale('mail.subject'), (locale('mail.message'):format(sellerPayment, VEHICLES[result[1].model].name)))
 
-    local locationId = vehicleData.location or Config.DefaultLocation
-    local locationData = Config.Locations[locationId]
     local spawnCoords = locationData and locationData.buyVehicle
     
     if not spawnCoords and locationData and locationData.saleSpots and locationData.saleSpots[result[1].spotid] then
